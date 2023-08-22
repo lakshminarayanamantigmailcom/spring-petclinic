@@ -19,8 +19,28 @@ pipeline {
                 }
             }
         }
-
-
+        stage('build and package') {
+            steps {
+                 rtMavenDeployer (
+                    id: "SPC_DEPLOYER",
+                    serverId: "JFROG",
+                    releaseRepo: 'jenkins-app-libs-snapshot-local',
+                    snapshotRepo: 'jenkins-app-libs-snapshot-local'
+                )
+                rtMavenRun (
+                    tool: 'MAVEN_3.9', // Tool name from Jenkins configuration
+                    pom: 'pom.xml',
+                    goals: 'package',
+                    deployerId: "SPC_DEPLOYER"
+                    //,
+                    //buildName: "${JOB_NAME}",
+                    //buildNumber: "${BUILD_ID}"
+                )
+                rtPublishBuildInfo (
+                    serverId: "JFROG"
+                )
+            }
+        }
         stage('reporting') {
             steps {
                 junit testResults: '**/target/surefire-reports/TEST-*.xml'
@@ -29,3 +49,4 @@ pipeline {
     }
 
 }
+
